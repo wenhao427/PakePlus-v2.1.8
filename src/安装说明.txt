@@ -1,0 +1,16 @@
+下载 Python 安装包https://www.python.org/downloads/windows/
+先安装python-3.11.9-amd64或者python-3.13.8-amd64
+
+验证 Python 是否安装成功
+按下Win + R，输入cmd，回车打开 CMD 窗口；
+输入python --version命令，按回车
+成功：显示Python 3.11.x（版本号对应你装的）
+
+
+安装依赖 + 启动 server.py
+回到之前定位好server.py的 CMD 窗口
+先安装项目依赖（比如 flask），输入pip install flask命令回车
+
+
+最后输入python server.py命令，启动服务
+看到Running on http://127.0.0.1:xxx就成功了！
