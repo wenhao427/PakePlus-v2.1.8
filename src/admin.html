@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 基础ICO（兼容旧浏览器） -->
+  <link rel="icon" type="image/x-icon" href="/logo.ico">
+  <!-- 多尺寸PNG（现代浏览器） -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/logo-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/logo-16.png">
+  <!-- iOS主屏图标 -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<title>后台管理</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:微软雅黑}
+body{background:#f5f7fa;padding:20px}
+.container{max-width:1000px;margin:0 auto;background:#fff;border-radius:16px;padding:30px}
+.panel{margin-bottom:30px}
+.panel-title{font-size:18px;margin-bottom:12px}
+.form-group{margin-bottom:12px}
+input{padding:8px 12px;width:300px;border:1px solid #ddd;border-radius:6px}
+button{padding:8px 16px;background:#4285f4;color:#fff;border:none;border-radius:6px;cursor:pointer;margin-right:6px}
+.btn-danger{background:#e53e3e}
+.btn-success{background:#48bb78}
+.img-preview{margin-top:10px;max-width:200px}
+.img-preview img{width:100%;display:block;margin-top:6px}
+.row{display:flex;align-items:center;gap:10px;margin-bottom:15px}
+/* 分区样式（拖拽+序号） */
+.section-item{display:flex;align-items:center;justify-content:space-between;padding:10px;border:1px solid #eee;border-radius:8px;margin-bottom:10px}
+.section-item .sort-num{width:24px;height:24px;line-height:24px;text-align:center;background:#f5f5f5;border-radius:4px;margin-right:10px}
+.section-item .sort-handle{cursor:grab;margin-right:10px;color:#4285f4}
+#btn-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:16px}
+.card{border:1px solid #eee;padding:12px;border-radius:8px;margin-bottom:10px}
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;background:#48bb78;color:white;border-radius:6px;opacity:0;transition:.3s;z-index:9999}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <h2 style="margin-bottom:20px">后台管理</h2>
+
+  <!-- 品牌配置 -->
+  <div class="panel">
+    <div class="panel-title">品牌配置</div>
+    <div class="form-group">
+      <label>品牌名称（前端标题）</label>
+      <input id="name" placeholder="默认：大螃蟹-能干活的AI智能体！" value="大螃蟹-能干活的AI智能体！">
+    </div>
+    <div class="form-group">
+      <label>副标题</label>
+      <input id="subtitle" placeholder="高效触发 · 提升效率">
+    </div>
+    <div class="form-group">
+      <label>LOGO图片（建议正方形）</label>
+      <input type="file" id="logoFile" accept="image/*">
+      <div class="img-preview"><img id="logoPrev" style="display:none"></div>
+    </div>
+    <div class="form-group">
+      <label>横幅图片</label>
+      <input type="file" id="bannerFile" accept="image/*">
+      <div class="img-preview"><img id="bannerPrev" style="display:none"></div>
+    </div>
+    <button onclick="saveBrand()">保存配置</button>
+  </div>
+
+  <!-- 分区管理（拖拽+序号） -->
+  <div class="panel">
+    <div class="panel-title">分区管理（拖拽调整顺序）</div>
+    <div class="row">
+      <input id="newSecName" placeholder="输入分区名称">
+      <button class="btn-success" onclick="addSection()">新增分区</button>
+    </div>
+    <div id="sectionsList"></div>
+    <button onclick="saveSectionsSort()">保存分区排序</button>
+  </div>
+
+  <!-- 按钮管理 -->
+  <div class="panel">
+    <div class="panel-title">按钮管理</div>
+    <button class="btn-success" onclick="addButton()">新增按钮</button>
+    <div id="btn-container"></div>
+    <button style="margin-top:16px" onclick="saveButtons()">保存所有按钮</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">保存成功！</div>
+
+<script>
+let config;
+let logo64 = "", banner64 = "";
+
+// 页面加载初始化
+window.onload = async () => {
+  try {
+    const r = await fetch("http://localhost:5000/api/config");
+    const resData = await r.json();
+    config = resData.data;
+    
+    // 回显品牌配置
+    document.getElementById("name").value = config.brand.name || "大螃蟹-能干活的AI智能体！";
+    document.getElementById("subtitle").value = config.brand.subtitle || "";
+    // 回显图片
+    if(config.brand.logo_img){ 
+      logo64 = config.brand.logo_img; 
+      document.getElementById("logoPrev").src = logo64;
+      document.getElementById("logoPrev").style.display = "block";
+    }
+    if(config.brand.banner_img){ 
+      banner64 = config.brand.banner_img; 
+      document.getElementById("bannerPrev").src = banner64;
+      document.getElementById("bannerPrev").style.display = "block";
+    }
+    
+    // 渲染分区（带序号）和按钮
+    renderSections();
+    renderButtons();
+  } catch (err) {
+    alert("加载配置失败，请启动server.py！");
+  }
+};
+
+// LOGO/横幅上传预览
+document.getElementById("logoFile").onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const f = new FileReader();
+  f.onload = e=>{
+    logo64 = e.target.result;
+    document.getElementById("logoPrev").src = logo64;
+    document.getElementById("logoPrev").style.display = "block";
+  }
+  f.readAsDataURL(file);
+};
+document.getElementById("bannerFile").onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const f = new FileReader();
+  f.onload = e=>{
+    banner64 = e.target.result;
+    document.getElementById("bannerPrev").src = banner64;
+    document.getElementById("bannerPrev").style.display = "block";
+  }
+  f.readAsDataURL(file);
+};
+
+// 保存品牌配置
+async function saveBrand(){
+  try {
+    await fetch("http://localhost:5000/api/config/brand",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        name: document.getElementById("name").value,
+        subtitle: document.getElementById("subtitle").value,
+        logo_img: logo64,
+        banner_img: banner64
+      })
+    });
+    // 保存成功提示
+    const toast = document.getElementById("toast");
+    toast.style.opacity=1; 
+    setTimeout(()=>toast.style.opacity=0,2000);
+  } catch (err) {
+    alert("保存失败：" + err.message);
+  }
+}
+
+// 渲染分区（带序号+拖拽）
+function renderSections(){
+  const list = document.getElementById("sectionsList");
+  list.innerHTML = "";
+  
+  // 无分区时显示提示
+  if (config.sections.length === 0) {
+    list.innerHTML = '<div style="color:#999;padding:10px">暂无分区，点击上方"新增分区"添加</div>';
+    return;
+  }
+
+  // 按排序号排序后渲染
+  config.sections.sort((a,b)=>a.sort-b.sort).forEach((s, index)=>{
+    const item = document.createElement("div");
+    item.className = "section-item";
+    item.dataset.id = s.id;
+    item.innerHTML = `
+      <div>
+        <span class="sort-num">${index+1}</span>
+        <span class="sort-handle">☰</span>
+        <span>${s.name}</span>
+      </div>
+      <div>
+        <button onclick="editSection('${s.id}')">编辑</button>
+        <button class="btn-danger" onclick="delSection('${s.id}')">删除</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  // 初始化拖拽排序
+  new Sortable(list,{
+    handle: ".sort-handle",
+    animation: 150,
+    onEnd: () => {
+      // 拖拽后更新序号
+      document.querySelectorAll(".section-item").forEach((item, idx) => {
+        item.querySelector(".sort-num").innerText = idx + 1;
+      });
+    }
+  });
+}
+
+// 新增分区
+async function addSection(){
+  const name = document.getElementById("newSecName").value.trim();
+  if (!name) {
+    alert("请输入分区名称！");
+    return;
+  }
+  try {
+    await fetch("http://localhost:5000/api/config/sections",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name})
+    });
+    document.getElementById("newSecName").value = "";
+    renderSections(); // 重新渲染分区
+    showToast("分区新增成功！");
+  } catch (err) {
+    alert("新增失败：" + err.message);
+  }
+}
+
+// 编辑分区
+async function editSection(id){
+  const currentName = config.sections.find(s => s.id === id)?.name;
+  const newName = prompt("修改分区名称", currentName);
+  if (!newName || newName.trim() === "") return;
+  try {
+    await fetch(`http://localhost:5000/api/config/sections/${id}`,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({name: newName.trim()})
+    });
+    renderSections(); // 重新渲染分区
+    showToast("分区修改成功！");
+  } catch (err) {
+    alert("修改失败：" + err.message);
+  }
+}
+
+// 删除分区
+async function delSection(id){
+  if (!confirm("确定删除该分区吗？删除后该分区下的按钮也会移除！")) return;
+  try {
+    await fetch(`http://localhost:5000/api/config/sections/${id}`,{method:"DELETE"});
+    // 更新本地配置并重新渲染
+    config.sections = config.sections.filter(s => s.id !== id);
+    config.buttons = config.buttons.map(btn => ({
+      ...btn,
+      sections: btn.sections.filter(sid => sid !== id)
+    }));
+    renderSections();
+    renderButtons();
+    showToast("分区删除成功！");
+  } catch (err) {
+    alert("删除失败：" + err.message);
+  }
+}
+
+// 保存分区排序
+async function saveSectionsSort(){
+  try {
+    const sortArr = [];
+    document.querySelectorAll(".section-item").forEach((item, idx)=>{
+      sortArr.push({
+        id: item.dataset.id,
+        sort: idx + 1
+      });
+    });
+    await fetch("http://localhost:5000/api/config/sections/sort",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(sortArr)
+    });
+    // 更新本地配置的排序号
+    sortArr.forEach(item => {
+      const sec = config.sections.find(s => s.id === item.id);
+      if (sec) sec.sort = item.sort;
+    });
+    showToast("排序保存成功！");
+  } catch (err) {
+    alert("保存排序失败：" + err.message);
+  }
+}
+
+// 渲染按钮
+function renderButtons(){
+  const container = document.getElementById("btn-container");
+  container.innerHTML = "";
+
+  // 无按钮时显示提示
+  if (config.buttons.length === 0) {
+    container.innerHTML = '<div style="color:#999;padding:10px">暂无按钮，点击上方"新增按钮"添加</div>';
+    return;
+  }
+
+  // 渲染每个按钮
+  config.buttons.forEach((btn, idx)=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    // 生成分区选择复选框
+    let sectionChecks = "";
+    config.sections.forEach(s => {
+      const isChecked = btn.sections.includes(s.id) ? "checked" : "";
+      sectionChecks += `
+        <label style="margin-right:10px;font-size:12px">
+          <input type="checkbox" class="sec-checkbox" data-id="${s.id}" ${isChecked}> ${s.name}
+        </label>
+      `;
+    });
+
+    card.innerHTML = `
+      <div style="margin-bottom:8px">
+        <label style="font-size:12px;color:#666">按钮文字：</label>
+        <input class="btn-text" type="text" value="${btn.text || ''}" placeholder="如：保存代码" style="width:100%;margin-top:4px">
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:12px;color:#666">快捷键：</label>
+        <input class="btn-sc" type="text" value="${btn.shortcut || ''}" placeholder="如：ctrl+s" style="width:100%;margin-top:4px">
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:12px;color:#666">提示文字：</label>
+        <input class="btn-hint" type="text" value="${btn.hint || ''}" placeholder="如：Ctrl+S 保存" style="width:100%;margin-top:4px">
+      </div>
+      <div style="margin-bottom:8px;font-size:12px;color:#666">
+        所属分区：${sectionChecks || '暂无分区可选'}
+      </div>
+      <button class="btn-danger" onclick="delBtn(${idx})">删除按钮</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// 新增按钮
+function addButton(){
+  // 新增按钮默认配置
+  const newBtn = {
+    id: "btn_" + Date.now(),
+    text: "新按钮",
+    shortcut: "",
+    hint: "",
+    sections: []
+  };
+  config.buttons.push(newBtn);
+  renderButtons(); // 重新渲染按钮
+}
+
+// 删除按钮
+function delBtn(idx){
+  if (!confirm("确定删除该按钮吗？")) return;
+  config.buttons.splice(idx, 1);
+  renderButtons(); // 重新渲染按钮
+}
+
+// 保存所有按钮
+async function saveButtons(){
+  try {
+    const btnList = [];
+    const cardElements = document.querySelectorAll(".card");
+    
+    cardElements.forEach((card, idx)=>{
+      // 获取按钮基础信息
+      const text = card.querySelector(".btn-text").value.trim();
+      const shortcut = card.querySelector(".btn-sc").value.trim();
+      const hint = card.querySelector(".btn-hint").value.trim();
+      // 获取选中的分区
+      const sections = [];
+      card.querySelectorAll(".sec-checkbox:checked").forEach(cb => {
+        sections.push(cb.dataset.id);
+      });
+      // 组装按钮数据
+      btnList.push({
+        id: config.buttons[idx].id,
+        text: text,
+        shortcut: shortcut,
+        hint: hint,
+        sections: sections
+      });
+    });
+
+    // 提交保存
+    await fetch("http://localhost:5000/api/config/buttons",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(btnList)
+    });
+    // 更新本地配置
+    config.buttons = btnList;
+    showToast("按钮保存成功！");
+  } catch (err) {
+    alert("保存按钮失败：" + err.message);
+  }
+}
+
+// 通用提示框
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  toast.innerText = msg || "操作成功！";
+  toast.style.opacity = 1;
+  setTimeout(()=>{
+    toast.style.opacity = 0;
+  }, 2000);
+}
+</script>
+</body>
+</html>
