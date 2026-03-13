@@ -1,0 +1,274 @@
+{
+  "brand": {
+    "name": "大螃蟹-OpenClaw",
+    "subtitle": "高效触发工作流 · 提升工作效率",
+    "logo_text": "AI",
+    "banner_img": "D:\\AI_Work_Panel\\images\\制作简约科技风螃蟹图 (2).png"
+  },
+  "sections": [
+    {
+      "id": "54ed8a72",
+      "name": "常用工作区",
+      "sort": 1
+    },
+    {
+      "id": "ed4a3cc4",
+      "name": "采购工作区",
+      "sort": 2
+    },
+    {
+      "id": "14d83a16",
+      "name": "销售工作区",
+      "sort": 3
+    },
+    {
+      "id": "ccaf2ec3",
+      "name": "仓库工作区",
+      "sort": 4
+    },
+    {
+      "id": "f785afc5",
+      "name": "物流工作区",
+      "sort": 5
+    },
+    {
+      "id": "op",
+      "name": "客服工作区",
+      "sort": 6
+    },
+    {
+      "id": "efcd7a9c",
+      "name": "财务工作区",
+      "sort": 7
+    },
+    {
+      "id": "dev",
+      "name": "研发工作区",
+      "sort": 8
+    },
+    {
+      "id": "a873f6b6",
+      "name": "新媒体工作区",
+      "sort": 9
+    },
+    {
+      "id": "meeting",
+      "name": "会议协作区",
+      "sort": 10
+    }
+  ],
+  "buttons": [
+    {
+      "id": "btn_1773278782963",
+      "text": "自动制作报价表",
+      "shortcut": "F1",
+      "hint": "F1>>",
+      "sections": [
+        "54ed8a72",
+        "14d83a16",
+        "efcd7a9c"
+      ]
+    },
+    {
+      "id": "btn_1773279475296",
+      "text": "自动给客户发消息",
+      "shortcut": "F2",
+      "hint": "F2>>",
+      "sections": [
+        "54ed8a72",
+        "14d83a16",
+        "op"
+      ]
+    },
+    {
+      "id": "btn_1773281974033",
+      "text": "刷新进程",
+      "shortcut": "F5",
+      "hint": "F5>>",
+      "sections": [
+        "54ed8a72",
+        "op",
+        "dev"
+      ]
+    },
+    {
+      "id": "btn_1773282648595",
+      "text": "自动代客录单",
+      "shortcut": "F6",
+      "hint": "F6>>",
+      "sections": [
+        "54ed8a72",
+        "14d83a16",
+        "op"
+      ]
+    },
+    {
+      "id": "btn_1773282744796",
+      "text": "自动汇总订单",
+      "shortcut": "Ctrl+Shift+F",
+      "hint": "F7>>",
+      "sections": [
+        "54ed8a72",
+        "ed4a3cc4",
+        "op"
+      ]
+    },
+    {
+      "id": "btn_1773282745354",
+      "text": "自动物流排线",
+      "shortcut": "",
+      "hint": "待上线",
+      "sections": [
+        "54ed8a72",
+        "f785afc5"
+      ]
+    },
+    {
+      "id": "btn_1773282745814",
+      "text": "自动发配送对账单",
+      "shortcut": "F3",
+      "hint": "F3>>",
+      "sections": [
+        "54ed8a72",
+        "f785afc5",
+        "op"
+      ]
+    },
+    {
+      "id": "btn_1773282746200",
+      "text": "自动统计供应商金额",
+      "shortcut": "Alt+D",
+      "hint": "Alt+D>>",
+      "sections": [
+        "54ed8a72",
+        "op",
+        "efcd7a9c"
+      ]
+    },
+    {
+      "id": "btn_1773282746640",
+      "text": "自动统计财务报表",
+      "shortcut": "F8",
+      "hint": "F8>>",
+      "sections": [
+        "54ed8a72",
+        "efcd7a9c"
+      ]
+    },
+    {
+      "id": "btn_1773282997033",
+      "text": "自动制作数字人视频",
+      "shortcut": "F11",
+      "hint": "F11>>",
+      "sections": [
+        "54ed8a72",
+        "a873f6b6"
+      ]
+    },
+    {
+      "id": "btn_1773282997565",
+      "text": "自动查询天气",
+      "shortcut": "F12",
+      "hint": "F12>>",
+      "sections": [
+        "54ed8a72",
+        "ed4a3cc4",
+        "14d83a16",
+        "ccaf2ec3",
+        "f785afc5",
+        "op",
+        "a873f6b6"
+      ]
+    },
+    {
+      "id": "btn_1773282997969",
+      "text": "返回桌面",
+      "shortcut": "Win+D",
+      "hint": "Win+D>>",
+      "sections": [
+        "dev"
+      ]
+    },
+    {
+      "id": "btn_1773282998357",
+      "text": "自动获取市场价格",
+      "shortcut": "F4",
+      "hint": "F4>>",
+      "sections": [
+        "54ed8a72",
+        "ed4a3cc4",
+        "14d83a16",
+        "op",
+        "efcd7a9c"
+      ]
+    },
+    {
+      "id": "btn_1773282998761",
+      "text": "自动加微信",
+      "shortcut": "F9",
+      "hint": "F9>>",
+      "sections": [
+        "54ed8a72",
+        "14d83a16",
+        "op",
+        "a873f6b6"
+      ]
+    },
+    {
+      "id": "btn_1773283214811",
+      "text": "自动更新盘点表",
+      "shortcut": "",
+      "hint": "",
+      "sections": [
+        "54ed8a72",
+        "ed4a3cc4",
+        "14d83a16",
+        "ccaf2ec3",
+        "op",
+        "efcd7a9c"
+      ]
+    },
+    {
+      "id": "btn_1773283215658",
+      "text": "自动生成采购计划单",
+      "shortcut": "",
+      "hint": "",
+      "sections": [
+        "54ed8a72",
+        "ed4a3cc4",
+        "op"
+      ]
+    },
+    {
+      "id": "btn_1773284259323",
+      "text": "自动核对库存并播报",
+      "shortcut": "",
+      "hint": "",
+      "sections": [
+        "54ed8a72",
+        "ed4a3cc4",
+        "ccaf2ec3",
+        "op",
+        "efcd7a9c"
+      ]
+    },
+    {
+      "id": "btn_1773372996694",
+      "text": "取消任务",
+      "shortcut": "Ctrl+Alt+Q",
+      "hint": ">>",
+      "sections": [
+        "54ed8a72"
+      ]
+    },
+    {
+      "id": "btn_1773372999712",
+      "text": "暂停任务",
+      "shortcut": "Ctrl+Alt+E",
+      "hint": ">>",
+      "sections": [
+        "54ed8a72"
+      ]
+    }
+  ]
+}
